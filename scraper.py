@@ -94,7 +94,7 @@ def scrape_npo(url):
 
 @scraper.task
 def scrape_npos():
-    for i in xrange(10000, 16000000):
+    for i in xrange(1, 16000000):
         url = URL_PATTERN % i
         scrape_npo.queue(url)
 

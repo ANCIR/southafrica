@@ -9,7 +9,7 @@ from scrapekit.util import collapse_whitespace
 
 URL_PATTERN = "http://www.npo.gov.za/PublicNpo/Npo/DetailsAllDocs/%s"
 
-scraper = scrapekit.Scraper('npo', config={'threads': 30})
+scraper = scrapekit.Scraper('npo', config={'threads': 20})
 engine = dataset.connect(os.environ.get('NPO_DB_URI'))
 
 

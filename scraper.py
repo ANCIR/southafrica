@@ -4,19 +4,21 @@ import re
 import os
 from pprint import pprint # noqa
 from urlparse import urljoin
+from itertools import count
 from lxml import html
 from scrapekit.util import collapse_whitespace
 
+QUERY = 'http://www.npo.gov.za/PublicNpo/JqGridDataTableControl/Json/PublicNpoSearch_Index?filter=&_search=false&nd=1415907408632&rows=100&page=%s&sidx=DateRegistered&sord=asc'
 URL_PATTERN = "http://www.npo.gov.za/PublicNpo/Npo/DetailsAllDocs/%s"
 
-scraper = scrapekit.Scraper('npo', config={'threads': 10})
+scraper = scrapekit.Scraper('npo', config={'threads': 5})
 engine = dataset.connect(os.environ.get('NPO_DB_URI'))
 
 
 @scraper.task
-def scrape_npo(url):
-    data = engine['npo'].find_one(source_url=url)
-    if data is not None:
+def scrape_npo(url, data):
+    res = engine['npo'].find_one(source_url=url)
+    if res is not None:
         scraper.log.info("Already done: %s", data['name'])
         return
     res = scraper.get(url)
@@ -24,12 +26,12 @@ def scrape_npo(url):
         scraper.log.warning("Skipping: %s", url)
         return
     doc = html.fromstring(res.content)
-    data = {
+    data.update({
         'source_url': url,
         'name': doc.find('.//h1').find('.//span').text.strip(),
         'status': doc.find('.//h1').find('.//span[@class="npo-status"]').text,
         'email': None
-    }
+    })
     scraper.log.info("Scraping: %s", data['name'])
     sub_titles = doc.findall('.//h5')
     next_heading = None
@@ -98,9 +100,22 @@ def scrape_npo(url):
 
 @scraper.task
 def scrape_npos():
-    for i in xrange(1, 16000000):
-        url = URL_PATTERN % i
-        scrape_npo.queue(url)
+    for page in count(1):
+        page_url = QUERY % page
+        res = scraper.get(page_url)
+        data = res.json()
+        if data.get('total') < page:
+            break
+        for row in data.get('rows', []):
+            id = row.get('id')
+            cell = row.get('cell')
+            npo = {
+                'name': cell[2],
+                'reg_no_cell': cell[3],
+                'reg_status_cell': cell[4],
+            }
+            url = URL_PATTERN % id
+            scrape_npo.queue(url, npo)
 
 if __name__ == '__main__':
     scrape_npos.run()

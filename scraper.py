@@ -9,12 +9,15 @@ from scrapekit.util import collapse_whitespace
 
 URL_PATTERN = "http://www.npo.gov.za/PublicNpo/Npo/DetailsAllDocs/%s"
 
-scraper = scrapekit.Scraper('npo', config={'threads': 20})
+scraper = scrapekit.Scraper('npo', config={'threads': 10})
 engine = dataset.connect(os.environ.get('NPO_DB_URI'))
 
 
 @scraper.task
 def scrape_npo(url):
+    data = engine['npo'].find_one(source_url=url)
+    if data is not None:
+        scraper.log.info("Already done: %s", data['name'])
     res = scraper.get(url)
     if 'internal server error' in res.content:
         scraper.log.warning("Skipping: %s", url)

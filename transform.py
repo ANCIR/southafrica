@@ -6,12 +6,15 @@ npo = engine['npo']
 
 for row in list(npo.distinct('category')):
     category = row.get('category')
-    c1, c2, c3 = category.split(' > ')
+    if category is None or not len(category):
+        continue
+    #print [category]
+    cats = category.split(' > ')
     data = {
         'category': category,
-        'category1': c1,
-        'category2': c2,
-        'category3': c3
+        'category1': cats[0],
+        'category2': cats[1] if len(cats) > 1 else None,
+        'category3': cats[2] if len(cats) > 2 else None,
     }
-    print data
+    #print data
     npo.update(data, ['category'])

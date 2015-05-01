@@ -1,23 +1,22 @@
 import scrapekit
-import dataset
 import re
-import os
 from pprint import pprint # noqa
 from urlparse import urljoin
 from itertools import count
 from lxml import html
 from scrapekit.util import collapse_whitespace
+from common import database
 
 QUERY = 'http://www.npo.gov.za/PublicNpo/JqGridDataTableControl/Json/PublicNpoSearch_Index?filter=&_search=false&nd=1415907408632&rows=100&page=%s&sidx=DateRegistered&sord=asc'
 URL_PATTERN = "http://www.npo.gov.za/PublicNpo/Npo/DetailsAllDocs/%s"
 
-scraper = scrapekit.Scraper('npo', config={'threads': 5})
-engine = dataset.connect(os.environ.get('NPO_DB_URI'))
+
+scraper = scrapekit.Scraper('sa_npo', config={'threads': 5})
 
 
 @scraper.task
 def scrape_npo(url, data):
-    res = engine['npo'].find_one(source_url=url)
+    res = database['sa_npo'].find_one(source_url=url)
     if res is not None:
         scraper.log.info("Already done: %s", data['name'])
         return
@@ -74,7 +73,7 @@ def scrape_npo(url, data):
                 }.get(li.get('class'))
                 data[contact_type] = contact
     off_div = './/li[@data-sha-context-enttype="Npo.AppointedOfficeBearer"]'
-    engine['npo'].upsert(data, ['source_url'])
+    database['sa_npo'].upsert(data, ['source_url'])
     for li in doc.findall(off_div):
         s = li.find('.//strong')
         a = s.find('./a')
@@ -95,7 +94,7 @@ def scrape_npo(url, data):
             'officer_id_number': id_number
         }
         pprint(officer)
-        engine['npo_officer'].upsert(officer, ['source_url', 'officer_id'])
+        database['sa_npo_officer'].upsert(officer, ['source_url', 'officer_id'])
 
 
 @scraper.task

@@ -1,8 +1,6 @@
-import os
-import dataset
+from common import database
 
-engine = dataset.connect(os.environ.get('NPO_DB_URI'))
-npo = engine['npo']
+npo = database['sa_npo']
 
 for row in list(npo.distinct('category')):
     category = row.get('category')

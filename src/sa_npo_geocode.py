@@ -1,15 +1,13 @@
 import logging
 import json
-import os
-import dataset
 import requests
 
-logging.basicConfig(level=logging.INFO)
+from common import database
 
 log = logging.getLogger(__name__)
-engine = dataset.connect(os.environ.get('NPO_DB_URI'))
-npo = engine['npo']
-geo = engine['geo']
+
+npo = database['sa_npo']
+geo = database['sa_npo_geo']
 URL = 'http://nominatim.openstreetmap.org/search'
 
 
@@ -28,13 +26,13 @@ def geocode(address):
             'addressdetails': 1,
             'accept-language': 'en'
         }
-        #print params
+        # print params
         res = requests.get(URL, params=params)
         for match in res.json():
             data = json.dumps(match)
             geo.insert({'address': address, 'match': data})
             return match
-        
+
         geo.insert({'address': address, 'match': json.dumps(None)})
     except Exception, e:
         log.exception(e)

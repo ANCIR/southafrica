@@ -1,4 +1,5 @@
 .env
-data/*
+data/pa/pombola.json
+data/npo.jsonlog
 env/*
 *.pyc

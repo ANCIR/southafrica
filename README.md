@@ -1,4 +1,4 @@
-# Investigation data warehouse for South Africa
+# South Africa Political Data
 
 This repository contains a wide selection of public data from the RSA, as well as the necessary scripts to load it to a database and to analyze it.
 

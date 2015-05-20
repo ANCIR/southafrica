@@ -14,7 +14,17 @@ This is a scraper for the South African government's database of non-political o
 
 Information about all members of the national parliament, their financial declarations and data about political parties and committees. Sourced from the [Pombola data provided by PA](http://www.pa.org.za/help/api). 
 
-## Department of Mineral Resources
+### Department of Mineral Resources
 
 Information about all mines and their owners in RSA, which is part of the [directories](http://www.dmr.gov.za/publications/viewcategory/121-directories.html) published by the department.
+
+
+## Exploring the data
+
+Let's check out the biggest mine owners in SA:
+
+```sql
+SELECT mine_owner, COUNT(*) FROM sa_mines GROUP BY mine_owner  ORDER BY COUNT(*) DESC LIMIT 20;
+```
+
 

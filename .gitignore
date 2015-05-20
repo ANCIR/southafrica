@@ -1,5 +1,7 @@
 .env
 data/pa/pombola.json
 data/npo.jsonlog
+data/dmr/dmr.csv
+data/wikipeps.csv
 env/*
 *.pyc

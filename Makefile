@@ -13,6 +13,8 @@ install: env/bin/python
 
 clean:
 	rm -rf env
+	rm -f data/pa/pombola.json
+	rm -f data/dmr/dmr.csv
 
 env/bin/python:
 	virtualenv env
@@ -24,3 +26,9 @@ data/pa/pombola.json:
 
 pa: install data/pa/pombola.json
 	python src/sa_pa_load.py
+
+data/dmr/dmr.csv:
+	$(IN2CSV) data/dmr/d1_2015.xlsx >data/dmr/dmr.csv
+
+dmr-load: data/dmr/dmr.csv
+	$(PY) src/dmr_load.py
